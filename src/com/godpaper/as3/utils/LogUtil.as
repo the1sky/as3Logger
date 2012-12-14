@@ -1,11 +1,11 @@
-package com.godpaper.as3.utils
-{
-	import com.godpaper.as3.configs.LoggerConfig;
-
+package com.godpaper.as3.utils{
+	import com.godpaper.as3.configs.CustomerConfig;
+	
 	import flash.utils.getQualifiedClassName;
-
+	
 	import mx.logging.ILogger;
 	import mx.logging.Log;
+	import mx.logging.LogEventLevel;
 	import mx.logging.targets.TraceTarget;
 
 	/**
@@ -37,11 +37,11 @@ package com.godpaper.as3.utils
 	 *
 	 * @author Knight.zhou
 	 */
-	public class LogUtil
-	{
+	public class LogUtil{
 
 		//Variables(should be only one instance!)
 		private static var _traceTarget:TraceTarget=new TraceTarget();
+		private static var _log:ILogger;
 
 		/**
 		 * With the utility method approach,
@@ -53,21 +53,58 @@ package com.godpaper.as3.utils
 		 * @return ILogger
 		 *
 		 */
-		public static function getLogger(c:Class):ILogger
-		{
-			var className:String=getQualifiedClassName(c).replace("::", ".");
+		public static function getLogger(object:Object, config:CustomerConfig):ILogger{
+			var traceTarget:TraceTarget = new TraceTarget();
+			var className:String=getQualifiedClassName(object).replace("::", ".");
+			
+			Log.flush();
+			
+			config = ( config ) ? config : new CustomerConfig();							
+			
 			//Customize the Log
-			_traceTarget.includeLevel=LoggerConfig.includeLevel;
-			_traceTarget.includeDate=LoggerConfig.includeDate;
-			_traceTarget.includeCategory=LoggerConfig.includeCategory;
-			_traceTarget.includeTime=LoggerConfig.includeTime;
-			_traceTarget.includeMemory=LoggerConfig.includeMemory;
-			_traceTarget.fieldSeparator=LoggerConfig.fieldSeparator;
-			_traceTarget.filters=LoggerConfig.filters;
-			_traceTarget.level=LoggerConfig.level;
-			Log.addTarget(_traceTarget);
-			//
+			traceTarget.includeLevel = config.includeLevel;
+			traceTarget.includeDate = config.includeDate;
+			traceTarget.includeCategory=config.includeCategory;
+			traceTarget.includeTime = config.includeTime;
+			traceTarget.includeMemory = config.includeMemory;
+			traceTarget.fieldSeparator = config.fieldSeparator;
+			traceTarget.filters = config.filters;
+			traceTarget.level = config.level;
+			
+			config = null;			
+			Log.addTarget(traceTarget);
+			
 			return Log.getLogger(className);
+		}
+		
+		public static function log(object:Object, config:CustomerConfig=null, message:String="", ...rest):void{			
+			_log = getLogger( object, config );
+			_log.log( LogEventLevel.ALL, message, rest );				
+		}
+		
+		public static function debug(object:Object, config:CustomerConfig=null, message:String="", ...rest):void{	
+			_log = getLogger( object, config );					
+			_log.debug( message, rest );			
+		}
+		
+		public static function warn(object:Object, config:CustomerConfig=null, message:String="", ...rest):void{		
+			_log = getLogger( object, config );
+			_log.warn( message, rest );		
+		}
+		
+		public static function fatal(object:Object, config:CustomerConfig=null, message:String="", ...rest):void{			
+			_log = getLogger( object, config );
+			_log.fatal( message, rest );		
+		}
+		
+		public static function info(object:Object, config:CustomerConfig=null, message:String="", ...rest):void{
+			_log = getLogger( object, config );
+			_log.info( message, rest );	
+		}
+		
+		public static function error(object:Object, config:CustomerConfig=null, message:String="", ...rest):void{
+			_log = getLogger( object, config );
+			_log.error( message, rest );	
 		}
 	}
 }
